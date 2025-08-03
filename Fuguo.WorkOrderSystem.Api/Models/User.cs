@@ -11,6 +11,10 @@ public partial class User
 
     public string? UserName { get; set; }
 
+    public string? Account { get; set; }
+
+    public string? Password { get; set; }
+
     public string? CreateBy { get; set; }
 
     public DateTime? CreateDate { get; set; }

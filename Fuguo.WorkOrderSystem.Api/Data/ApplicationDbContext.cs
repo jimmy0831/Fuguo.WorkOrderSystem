@@ -80,10 +80,12 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Record).HasName("PK__Users__8DBE5B9E2F8ED6C1");
 
+            entity.Property(e => e.Account).HasMaxLength(50);
             entity.Property(e => e.CreateBy).HasMaxLength(50);
             entity.Property(e => e.CreateDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Password).HasMaxLength(50);
             entity.Property(e => e.UpdateBy).HasMaxLength(50);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasMaxLength(50);
