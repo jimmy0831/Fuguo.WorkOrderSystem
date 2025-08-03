@@ -3,20 +3,29 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 設定 CROS
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
+    {
+        policy.AllowAnyOrigin() 
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+// ... (AddEndpointsApiExplorer, AddSwaggerGen, AddDbContext 都不變)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ... (UseSwagger, UseHttpsRedirection 都不變)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,12 +34,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// CROS
+// 啟用 CROS
+app.UseCors(MyAllowSpecificOrigins);
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
