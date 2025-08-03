@@ -85,7 +85,8 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.CreateDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Password).HasMaxLength(50);
+            entity.Property(e => e.IsAdmin).HasMaxLength(5);
+            entity.Property(e => e.Password).HasMaxLength(255);
             entity.Property(e => e.UpdateBy).HasMaxLength(50);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
             entity.Property(e => e.UserId).HasMaxLength(50);
