@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
         // 3. 密碼驗證成功，產生 JWT Token
         var token = GenerateJwtToken(user);
 
-        // 4. 【修改點】回傳一個包含所有需要資訊的物件
+        // 4. 回傳一個包含所有需要資訊的物件
         return Ok(new
         {
             token = token,
