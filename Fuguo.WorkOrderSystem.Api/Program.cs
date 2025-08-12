@@ -23,6 +23,35 @@ builder.Services.AddControllers();
 
 // 3. 加入 Swagger/OpenAPI 服務
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    // 定義一個名為 "Bearer" 的安全性定義
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "輸入 JWT Token，並在前面加上 'Bearer '，例如：'Bearer eyJ...'"
+    });
+
+    // 將上述定義的 "Bearer" 安全性需求應用到所有需要授權的操作上
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 builder.Services.AddSwaggerGen();
 
 // 4. 加入 DbContext 服務
