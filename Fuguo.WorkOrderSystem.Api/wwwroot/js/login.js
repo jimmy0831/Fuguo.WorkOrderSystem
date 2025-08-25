@@ -21,11 +21,21 @@ new Vue({
                 password: this.password
             })
             .then(response => {
+                // 儲存 JWT Token 和使用者資訊
                 const session = {
-                    userData: response.data,
+                    token: response.data.token,
+                    userData: {
+                        userId: response.data.userId,
+                        userName: response.data.userName,
+                        account: response.data.account,
+                        isAdmin: response.data.isAdmin
+                    },
                     timestamp: new Date().getTime()
                 };
                 localStorage.setItem('appSession', JSON.stringify(session));
+
+                // 設定 axios 預設 Authorization header
+                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
                 showPopup('登入成功！歡迎 ' + response.data.userName);
 
