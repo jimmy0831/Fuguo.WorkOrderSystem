@@ -1,27 +1,33 @@
+// 登入頁面 Vue 應用
 new Vue({
     el: '#app',
     data: {
         username: '',
         password: '',
-        error: null
+        error: null,
+        loading: false
     },
     methods: {
-        login: function() {
+        async login() {
+            // 清除錯誤訊息
             this.error = null;
 
+            // 驗證輸入
             if (!this.username || !this.password) {
                 this.error = '帳號和密碼不能為空';
                 return;
             }
 
+            this.loading = true;
             showLoading();
 
-            axios.post('/api/Auth/login', {
-                account: this.username,
-                password: this.password
-            })
-            .then(response => {
-                // 儲存 JWT Token 和使用者資訊
+            try {
+                const response = await axios.post('/api/Auth/login', {
+                    account: this.username,
+                    password: this.password
+                });
+
+                // 儲存登入資訊
                 const session = {
                     token: response.data.token,
                     userData: {
@@ -34,25 +40,22 @@ new Vue({
                 };
                 localStorage.setItem('appSession', JSON.stringify(session));
 
-                // 設定 axios 預設 Authorization header
-                axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+                showPopup(`登入成功！歡迎 ${response.data.userName}`);
 
-                showPopup('登入成功！歡迎 ' + response.data.userName);
-
+                // 跳轉到主頁面
                 setTimeout(() => {
                     window.location.href = '/index.html';
                 }, 1500);
 
-            })
-            .catch(error => {
-                console.error('登入失敗:', error.response);
-                const message = error.response?.data?.message || '登入時發生未知的錯誤';
+            } catch (error) {
+                console.error('登入失敗:', error);
+                const message = error.response?.data?.message || '登入時發生錯誤';
                 this.error = message;
                 showPopup(message, 'error');
-            })
-            .finally(() => {
+            } finally {
+                this.loading = false;
                 hideLoading();
-            });
+            }
         }
     }
 });

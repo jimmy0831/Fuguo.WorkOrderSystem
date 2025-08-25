@@ -26,29 +26,28 @@ public class AuthController : ControllerBase
     {
         try
         {
-            // 1. 根據帳號查詢使用者
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Account == loginRequest.Account);
+            // 查詢使用者
+            var user = await _context.Users
+                .SingleOrDefaultAsync(u => u.Account == loginRequest.Account);
 
             if (user == null)
             {
-                return Unauthorized(new { message = "帳號或密碼錯誤。" });
+                return Unauthorized(new { message = "帳號或密碼錯誤" });
             }
 
-            // 2. 驗證密碼 - 使用 BCrypt
-            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password);
-
-            if (!isPasswordValid)
+            // 驗證密碼
+            if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
             {
-                return Unauthorized(new { message = "帳號或密碼錯誤。" });
+                return Unauthorized(new { message = "帳號或密碼錯誤" });
             }
 
-            // 3. 密碼驗證成功，產生 JWT Token
+            // 產生 JWT Token
             var token = GenerateJwtToken(user);
 
-            // 4. 回傳一個包含所有需要資訊的物件
+            // 回傳登入結果
             return Ok(new
             {
-                token = token,
+                token,
                 userId = user.UserId,
                 userName = user.UserName,
                 account = user.Account,
@@ -63,38 +62,32 @@ public class AuthController : ControllerBase
 
     private string GenerateJwtToken(User user)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]);
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Account),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Account ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.UserId ?? ""),
             new Claim(ClaimTypes.Name, user.Account ?? ""),
+            new Claim(ClaimTypes.Role, user.IsAdmin == "Y" ? "Admin" : "User")
         };
 
-        if (string.Equals(user.IsAdmin, "Y", StringComparison.OrdinalIgnoreCase))
-        {
-            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
-        }
-        else
-        {
-            claims.Add(new Claim(ClaimTypes.Role, "User"));
-        }
-
-        // 設定 Token 過期時間為當天的 23:59:59
+        // Token 當天有效（到當天 23:59:59）
         var endOfDay = DateTime.Today.AddDays(1).AddTicks(-1);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = endOfDay, // Token 在當天結束時過期
+            Expires = endOfDay,
             Issuer = _configuration["JwtSettings:Issuer"],
             Audience = _configuration["JwtSettings:Audience"],
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature)
         };
 
+        var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }

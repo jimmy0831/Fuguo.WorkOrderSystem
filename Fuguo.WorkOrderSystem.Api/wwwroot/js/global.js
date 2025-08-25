@@ -22,19 +22,3 @@ function showLoading() {
 function hideLoading() {
     $('.loading-overlay').fadeOut(300, () => $('.loading-overlay').remove());
 }
-
-// 全域設定 axios 攔截器
-$(document).ready(function() {
-    // 從 localStorage 恢復 Authorization header（如果存在）
-    const sessionString = localStorage.getItem('appSession');
-    if (sessionString) {
-        try {
-            const session = JSON.parse(sessionString);
-            if (session.token) {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${session.token}`;
-            }
-        } catch (error) {
-            console.error('無法恢復 Authorization header:', error);
-        }
-    }
-});
