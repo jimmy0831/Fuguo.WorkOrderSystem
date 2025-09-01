@@ -1,4 +1,4 @@
-function showPopup(message, type = 'success') {
+﻿function showPopup(message, type = 'success') {
     $('.popup').remove();
 
     const $popup = $('<div>', {

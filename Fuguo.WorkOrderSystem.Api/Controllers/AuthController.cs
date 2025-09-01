@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Fuguo.WorkOrderSystem.Api.Data;
 using Fuguo.WorkOrderSystem.Api.Models;
 using Fuguo.WorkOrderSystem.Api.Dtos;
+using Fuguo.WorkOrderSystem.Api.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,11 +15,13 @@ public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IPasswordEncryptionService _passwordEncryption;
 
-    public AuthController(ApplicationDbContext context, IConfiguration configuration)
+    public AuthController(ApplicationDbContext context, IConfiguration configuration, IPasswordEncryptionService passwordEncryption)
     {
         _context = context;
         _configuration = configuration;
+        _passwordEncryption = passwordEncryption;
     }
 
     [HttpPost("login")]
@@ -26,7 +29,6 @@ public class AuthController : ControllerBase
     {
         try
         {
-            // 查詢使用者
             var user = await _context.Users
                 .SingleOrDefaultAsync(u => u.Account == loginRequest.Account);
 
@@ -35,16 +37,13 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { message = "帳號或密碼錯誤" });
             }
 
-            // 驗證密碼
-            if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
+            if (!_passwordEncryption.Verify(loginRequest.Password, user.Password))
             {
                 return Unauthorized(new { message = "帳號或密碼錯誤" });
             }
 
-            // 產生 JWT Token
             var token = GenerateJwtToken(user);
 
-            // 回傳登入結果
             return Ok(new
             {
                 token,
@@ -63,7 +62,7 @@ public class AuthController : ControllerBase
     private string GenerateJwtToken(User user)
     {
         var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]);
-
+        
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Account ?? ""),
@@ -73,7 +72,6 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Role, user.IsAdmin == "Y" ? "Admin" : "User")
         };
 
-        // Token 當天有效（到當天 23:59:59）
         var endOfDay = DateTime.Today.AddDays(1).AddTicks(-1);
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -83,7 +81,7 @@ public class AuthController : ControllerBase
             Issuer = _configuration["JwtSettings:Issuer"],
             Audience = _configuration["JwtSettings:Audience"],
             SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
+                new SymmetricSecurityKey(key), 
                 SecurityAlgorithms.HmacSha256Signature)
         };
 

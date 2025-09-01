@@ -9,10 +9,8 @@ new Vue({
     },
     methods: {
         async login() {
-            // 清除錯誤訊息
             this.error = null;
 
-            // 驗證輸入
             if (!this.username || !this.password) {
                 this.error = '帳號和密碼不能為空';
                 return;
@@ -27,7 +25,6 @@ new Vue({
                     password: this.password
                 });
 
-                // 儲存登入資訊
                 const session = {
                     token: response.data.token,
                     userData: {
@@ -41,8 +38,6 @@ new Vue({
                 localStorage.setItem('appSession', JSON.stringify(session));
 
                 showPopup(`登入成功！歡迎 ${response.data.userName}`);
-
-                // 跳轉到主頁面
                 setTimeout(() => {
                     window.location.href = '/index.html';
                 }, 1500);

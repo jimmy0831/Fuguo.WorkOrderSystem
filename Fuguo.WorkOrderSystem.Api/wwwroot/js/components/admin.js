@@ -1,28 +1,29 @@
 ﻿Vue.component('admin-component', {
-	props: ['userData'],
-	data() {
-		return {
-			users: [],
-			loading: false,
-			showCreateModal: false,
-			showEditModal: false,
-			newUser: {
-				userId: '',
-				userName: '',
-				account: '',
-				password: '',
-				isAdmin: 'N'
-			},
-			editUser: {
-				userId: '',
-				userName: '',
-				account: '',
-				password: '',
-				isAdmin: 'N'
-			}
-		};
-	},
-	template: `
+    props: ['userData'],
+    data() {
+        return {
+            users: [],
+            loading: false,
+            showCreateModal: false,
+            showEditModal: false,
+            userIdCheckTimer: null,
+            newUser: {
+                userId: '',
+                userName: '',
+                account: '',
+                password: '',
+                isAdmin: 'N'
+            },
+            editUser: {
+                userId: '',
+                userName: '',
+                account: '',
+                password: '',
+                isAdmin: 'N'
+            }
+        };
+    },
+    template: `
         <div class="admin-container">
             <div class="admin-header">
                 <h3>後台管理系統</h3>
@@ -46,7 +47,7 @@
                             <td>{{ user.userId }}</td>
                             <td>{{ user.userName }}</td>
                             <td>{{ user.account }}</td>
-                            <td class="password-cell" :title="user.password">{{ formatPassword(user.password) }}</td>
+                            <td :title="user.password">{{ user.password }}</td>
                             <td>{{ user.isAdmin === 'Y' ? '是' : '否' }}</td>
                             <td>
                                 <button class="btn btn-edit" @click="editUserModal(user)">編輯</button>
@@ -68,7 +69,18 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>使用者ID:</label>
-                            <input type="text" v-model="newUser.userId" required>
+                            <input 
+                                type="text" 
+                                ref="createUserIdInput"
+                                v-model="newUser.userId" 
+                                @input="handleUserIdInput('create', $event)"
+                                @keypress="restrictToNumbers($event)"
+                                @paste="handlePaste($event)"
+                                @blur="checkUserIdExists('create')"
+                                placeholder="請輸入正整數"
+                                autocomplete="off"
+                                required>
+                            <small class="form-hint">請輸入正整數</small>
                         </div>
                         <div class="form-group">
                             <label>使用者名稱:</label>
@@ -80,7 +92,7 @@
                         </div>
                         <div class="form-group">
                             <label>密碼:</label>
-                            <input type="password" v-model="newUser.password" required>
+                            <input type="text" v-model="newUser.password" required>
                         </div>
                         <div class="form-group">
                             <label>管理員:</label>
@@ -108,6 +120,7 @@
                         <div class="form-group">
                             <label>使用者ID:</label>
                             <input type="text" v-model="editUser.userId" readonly>
+                            <small class="form-hint">使用者ID無法修改</small>
                         </div>
                         <div class="form-group">
                             <label>使用者名稱:</label>
@@ -119,7 +132,7 @@
                         </div>
                         <div class="form-group">
                             <label>新密碼 (留空則不修改):</label>
-                            <input type="password" v-model="editUser.password">
+                            <input type="text" v-model="editUser.password">
                         </div>
                         <div class="form-group">
                             <label>管理員:</label>
@@ -137,125 +150,200 @@
             </div>
         </div>
     `,
-	methods: {
-		// 格式化密碼顯示 - 直接顯示完整密碼
-		formatPassword(password) {
-			if (!password) return '';
-			// 直接返回完整密碼，不再截短
-			return password;
-		},
-
-		// 載入使用者列表
-		async loadUsers() {
-			this.loading = true;
-			try {
-				const response = await axios.get('/api/Admin/users');
-				this.users = response.data;
-			} catch (error) {
-				console.error('載入使用者失敗:', error);
-				showPopup('載入使用者列表失敗', 'error');
-			} finally {
-				this.loading = false;
-			}
-		},
-
-		// 顯示新增使用者 Modal
-		showCreateUserModal() {
-			this.newUser = {
-				userId: '',
-				userName: '',
-				account: '',
-				password: '',
-				isAdmin: 'N'
-			};
-			this.showCreateModal = true;
-		},
-
-		// 關閉新增 Modal
-		closeCreateModal() {
-			this.showCreateModal = false;
-		},
-
-		// 建立新使用者
-		async createUser() {
-			if (!this.newUser.userId || !this.newUser.userName || !this.newUser.account || !this.newUser.password) {
-				showPopup('請填寫所有必填欄位', 'error');
-				return;
-			}
-
-			try {
-				await axios.post('/api/Admin/users', this.newUser);
-				showPopup('使用者建立成功', 'success');
-				this.closeCreateModal();
-				this.loadUsers();
-			} catch (error) {
-				console.error('建立使用者失敗:', error);
-				const message = error.response?.data?.message || '建立使用者失敗';
-				showPopup(message, 'error');
-			}
-		},
-
-		// 顯示編輯使用者 Modal
-		editUserModal(user) {
-			this.editUser = {
-				userId: user.userId,
-				userName: user.userName,
-				account: user.account,
-				password: '',
-				isAdmin: user.isAdmin
-			};
-			this.showEditModal = true;
-		},
-
-		// 關閉編輯 Modal
-		closeEditModal() {
-			this.showEditModal = false;
-		},
-
-		// 更新使用者
-		async updateUser() {
-			if (!this.editUser.userName || !this.editUser.account) {
-				showPopup('請填寫所有必填欄位', 'error');
-				return;
-			}
-
-			try {
-				await axios.put(`/api/Admin/users/${this.editUser.userId}`, this.editUser);
-				showPopup('使用者更新成功', 'success');
-				this.closeEditModal();
-				this.loadUsers();
-			} catch (error) {
-				console.error('更新使用者失敗:', error);
-				const message = error.response?.data?.message || '更新使用者失敗';
-				showPopup(message, 'error');
-			}
-		},
-
-		// 刪除使用者
-		async deleteUser(userId) {
-			if (!confirm('確定要刪除此使用者嗎？')) {
-				return;
-			}
-
-			try {
-				await axios.delete(`/api/Admin/users/${userId}`);
-				showPopup('使用者刪除成功', 'success');
-				this.loadUsers();
-			} catch (error) {
-				console.error('刪除使用者失敗:', error);
-				const message = error.response?.data?.message || '刪除使用者失敗';
-				showPopup(message, 'error');
-			}
-		}
-	},
-	async mounted() {
-		// 檢查使用者權限
-		if (this.userData?.isAdmin !== 'Y') {
-			showPopup('您沒有權限存取此功能', 'error');
-			return;
-		}
-
-		// 載入使用者列表
-		await this.loadUsers();
-	}
+    methods: {
+        isValidPositiveInteger(value) {
+            return /^\d+$/.test(value) && Number(value) > 0;
+        },
+        cleanUserId(value) {
+            let cleaned = value.replace(/[^0-9]/g, '');
+            if (cleaned.length > 1) {
+                cleaned = cleaned.replace(/^0+/, '');
+            }
+            if (cleaned.length > 10) {
+                cleaned = cleaned.substring(0, 10);
+            }
+            return cleaned === '' || cleaned === '0' ? '' : cleaned;
+        },
+        restrictToNumbers(event) {
+            const char = String.fromCharCode(event.which);
+            if (!/[0-9]/.test(char)) {
+                event.preventDefault();
+            }
+        },
+        handlePaste(event) {
+            event.preventDefault();
+            const paste = (event.clipboardData || window.clipboardData).getData('text');
+            const numbersOnly = paste.replace(/[^0-9]/g, '');
+            if (numbersOnly) {
+                const target = event.target;
+                const start = target.selectionStart;
+                const end = target.selectionEnd;
+                const currentValue = target.value;
+                const newValue = currentValue.substring(0, start) + numbersOnly + currentValue.substring(end);
+                target.value = newValue;
+                const inputEvent = new Event('input', { bubbles: true });
+                target.dispatchEvent(inputEvent);
+            }
+        },
+        handleUserIdInput(mode, event) {
+            const userIdField = mode === 'create' ? 'newUser' : 'editUser';
+            const cleanedValue = this.cleanUserId(event.target.value);
+            this[userIdField].userId = cleanedValue;
+            event.target.value = cleanedValue;
+        },
+        checkUserIdExists(mode) {
+            const userIdField = mode === 'create' ? 'newUser' : 'editUser';
+            const userId = this[userIdField].userId;
+            if (!userId) return;
+            this.clearUserIdCheckTimer();
+            this.userIdCheckTimer = setTimeout(() => {
+                this.performUserIdCheck(userId, mode);
+            }, 500);
+        },
+        async performUserIdCheck(userId, mode) {
+            try {
+                const response = await axios.get(`/api/Admin/check-userid/${userId}`);
+                if (response.data.exists) {
+                    showPopup(`使用者ID ${userId} 已存在，請輸入其他ID`, 'error');
+                    const userIdField = mode === 'create' ? 'newUser' : 'editUser';
+                    this[userIdField].userId = '';
+                    this.$nextTick(() => {
+                        this.focusUserIdInput(mode);
+                    });
+                }
+            } catch (error) {
+                console.error('檢查使用者ID失敗:', error);
+            }
+        },
+        focusUserIdInput(mode) {
+            if (mode === 'create' && this.$refs.createUserIdInput) {
+                this.$refs.createUserIdInput.focus();
+            }
+        },
+        async loadUsers() {
+            this.loading = true;
+            try {
+                const response = await axios.get('/api/Admin/users');
+                this.users = response.data;
+            } catch (error) {
+                console.error('載入使用者失敗:', error);
+                showPopup('載入使用者列表失敗', 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+        showCreateUserModal() {
+            this.resetNewUser();
+            this.showCreateModal = true;
+            this.$nextTick(() => this.focusUserIdInput('create'));
+        },
+        closeCreateModal() {
+            this.showCreateModal = false;
+            this.clearUserIdCheckTimer();
+        },
+        createUser() {
+            if (!this.validateUserForm(this.newUser, true)) return;
+            this.performCreateUser();
+        },
+        validateUserForm(user, isCreate = false) {
+            if (isCreate && !this.isValidPositiveInteger(user.userId)) {
+                showPopup('使用者ID必須是正整數', 'error');
+                if (isCreate) {
+                    this.$nextTick(() => this.focusUserIdInput('create'));
+                }
+                return false;
+            }
+            if (!user.userName || !user.account) {
+                showPopup('請填寫所有必填欄位', 'error');
+                return false;
+            }
+            if (isCreate && !user.password) {
+                showPopup('請填寫密碼', 'error');
+                return false;
+            }
+            return true;
+        },
+        async performCreateUser() {
+            try {
+                await axios.post('/api/Admin/users', this.newUser);
+                showPopup('使用者建立成功', 'success');
+                this.closeCreateModal();
+                this.loadUsers();
+            } catch (error) {
+                console.error('建立使用者失敗:', error);
+                const message = error.response?.data?.message || '建立使用者失敗';
+                showPopup(message, 'error');
+            }
+        },
+        editUserModal(user) {
+            this.editUser = {
+                userId: user.userId,
+                userName: user.userName,
+                account: user.account,
+                password: '',
+                isAdmin: user.isAdmin
+            };
+            this.showEditModal = true;
+        },
+        closeEditModal() {
+            this.showEditModal = false;
+            this.clearUserIdCheckTimer();
+        },
+        updateUser() {
+            if (!this.validateUserForm(this.editUser)) return;
+            this.performUpdateUser();
+        },
+        async performUpdateUser() {
+            try {
+                await axios.put(`/api/Admin/users/${this.editUser.userId}`, this.editUser);
+                showPopup('使用者更新成功', 'success');
+                this.closeEditModal();
+                this.loadUsers();
+            } catch (error) {
+                console.error('更新使用者失敗:', error);
+                const message = error.response?.data?.message || '更新使用者失敗';
+                showPopup(message, 'error');
+            }
+        },
+        deleteUser(userId) {
+            if (!confirm('確定要刪除此使用者嗎？')) return;
+            this.performDeleteUser(userId);
+        },
+        async performDeleteUser(userId) {
+            try {
+                await axios.delete(`/api/Admin/users/${userId}`);
+                showPopup('使用者刪除成功', 'success');
+                this.loadUsers();
+            } catch (error) {
+                console.error('刪除使用者失敗:', error);
+                const message = error.response?.data?.message || '刪除使用者失敗';
+                showPopup(message, 'error');
+            }
+        },
+        resetNewUser() {
+            this.newUser = {
+                userId: '',
+                userName: '',
+                account: '',
+                password: '',
+                isAdmin: 'N'
+            };
+        },
+        clearUserIdCheckTimer() {
+            if (this.userIdCheckTimer) {
+                clearTimeout(this.userIdCheckTimer);
+                this.userIdCheckTimer = null;
+            }
+        }
+    },
+    async mounted() {
+        if (this.userData?.isAdmin !== 'Y') {
+            showPopup('您沒有權限存取此功能', 'error');
+            return;
+        }
+        await this.loadUsers();
+    },
+    beforeDestroy() {
+        this.clearUserIdCheckTimer();
+    }
 });
