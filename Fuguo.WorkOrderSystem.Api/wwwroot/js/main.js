@@ -9,7 +9,8 @@ new Vue({
         menuItems: [
             { key: 'work-order', title: '工單系統', component: 'work-order-component' },
             { key: 'molds', title: '模具刀模系統', component: 'molds-component' },
-            { key: 'admin', title: '後台管理', component: 'admin-component', requireAdmin: true }
+            { key: 'dropdown-management', title: '下拉選單管理', component: 'dropdown-management-component', requireAdmin: true },
+            { key: 'admin', title: '後台管理', component: 'admin-component', requireAdmin: true },
         ]
     },
 
@@ -20,9 +21,30 @@ new Vue({
         },
 
         visibleMenuItems() {
-            return this.menuItems.filter(item => {
-                return !item.requireAdmin || (this.userData?.isAdmin === 'Y');
+            console.log('=== 選單權限檢查開始 ===');
+            console.log('當前使用者資料:', this.userData);
+            console.log('isAdmin 值:', this.userData?.isAdmin);
+            console.log('isAdmin 類型:', typeof this.userData?.isAdmin);
+            console.log('所有選單項目:', this.menuItems);
+            
+            const filteredItems = this.menuItems.filter(item => {
+                const hasAdminRequirement = item.requireAdmin;
+                const userIsAdmin = this.userData?.isAdmin === 'Y';
+                const shouldShow = !hasAdminRequirement || userIsAdmin;
+                
+                console.log(`選單項目 "${item.title}":`, {
+                    requireAdmin: hasAdminRequirement,
+                    userIsAdmin: userIsAdmin,
+                    shouldShow: shouldShow
+                });
+                
+                return shouldShow;
             });
+            
+            console.log('可見的選單項目:', filteredItems);
+            console.log('=== 選單權限檢查結束 ===');
+            
+            return filteredItems;
         },
 
         userDisplayName() {
@@ -111,6 +133,7 @@ new Vue({
                 return;
             }
 
+            console.log('初始化應用程式，使用者會話資料:', session);
             this.userData = session.userData;
             this.isAuthenticated = true;
 
@@ -144,6 +167,14 @@ new Vue({
     },
 
     mounted() {
+        console.log('=== Vue 應用程式 mounted ===');
+        console.log('檢查 Vue 組件是否已註冊:');
+        console.log('dropdown-management-component:', !!this.$options.components['dropdown-management-component']);
+        
+        // 檢查全域組件
+        const globalComponents = Object.keys(Vue.options.components || {});
+        console.log('全域 Vue 組件:', globalComponents);
+        
         if (this.isAuthenticated && this.visibleMenuItems.length > 0) {
             const firstItem = this.visibleMenuItems[0];
             this.navigateTo(firstItem.key, firstItem.title);

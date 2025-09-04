@@ -18,7 +18,13 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<CuttingDy> CuttingDies { get; set; }
 
+    public virtual DbSet<CuttingType> CuttingTypes { get; set; }
+
+    public virtual DbSet<FormingType> FormingTypes { get; set; }
+
     public virtual DbSet<Mold> Molds { get; set; }
+
+    public virtual DbSet<PackagingType> PackagingTypes { get; set; }
 
     public virtual DbSet<Photo> Photos { get; set; }
 
@@ -51,6 +57,22 @@ public partial class ApplicationDbContext : DbContext
                 .HasConstraintName("FK__CuttingDi__MoldR__3D5E1FD2");
         });
 
+        modelBuilder.Entity<CuttingType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__CuttingT__3214EC273AC90FEE");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<FormingType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__FormingT__3214EC275EDACC65");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<Mold>(entity =>
         {
             entity.HasKey(e => e.Record).HasName("PK__Molds__8DBE5B9E38F2BBD9");
@@ -62,6 +84,14 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.MoldId).HasMaxLength(50);
             entity.Property(e => e.UpdateBy).HasMaxLength(50);
             entity.Property(e => e.UpdateDate).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<PackagingType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Packagin__3214EC27B97B848D");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Photo>(entity =>

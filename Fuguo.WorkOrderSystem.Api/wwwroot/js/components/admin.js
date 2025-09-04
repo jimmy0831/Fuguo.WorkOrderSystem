@@ -1,4 +1,4 @@
-﻿Vue.component('admin-component', {
+Vue.component('admin-component', {
     props: ['userData'],
     data() {
         return {
@@ -25,48 +25,47 @@
     },
     template: `
         <div class="admin-container">
-            <div class="admin-header">
-                <h3>後台管理系統</h3>
+            <div class="table-action-header">
                 <button class="btn btn-primary" @click="showCreateUserModal">新增使用者</button>
             </div>
+            <table class="user-table" v-if="!loading">
+                <thead>
+                    <tr>
+                        <th>使用者ID</th>
+                        <th>使用者名稱</th>
+                        <th>帳號</th>
+                        <th>密碼</th>
+                        <th>管理員</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="user in users" :key="user.userId">
+                        <td>{{ user.userId }}</td>
+                        <td>{{ user.userName }}</td>
+                        <td>{{ user.account }}</td>
+                        <td class="password-cell" :title="user.password">{{ user.password }}</td>
+                        <td>
+                            <span :class="['admin-badge', user.isAdmin === 'Y' ? 'yes' : 'no']">
+                                {{ user.isAdmin === 'Y' ? '是' : '否' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-edit" @click="editUserModal(user)">編輯</button>
+                            <button class="btn btn-delete" @click="deleteUser(user.userId)" :disabled="user.account === userData.account">刪除</button>
+                        </td>
+                    </tr>
+                    <tr v-if="users.length === 0">
+                        <td colspan="6" class="no-data">暫無使用者資料</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div v-if="loading" class="loading">載入中...</div>
             
-            <div class="user-table-container">
-                <table class="user-table" v-if="!loading">
-                    <thead>
-                        <tr>
-                            <th>使用者ID</th>
-                            <th>使用者名稱</th>
-                            <th>帳號</th>
-                            <th>密碼</th>
-                            <th>管理員</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in users" :key="user.userId">
-                            <td>{{ user.userId }}</td>
-                            <td>{{ user.userName }}</td>
-                            <td>{{ user.account }}</td>
-                            <td :title="user.password">{{ user.password }}</td>
-                            <td>{{ user.isAdmin === 'Y' ? '是' : '否' }}</td>
-                            <td>
-                                <button class="btn btn-edit" @click="editUserModal(user)">編輯</button>
-                                <button class="btn btn-delete" @click="deleteUser(user.userId)" :disabled="user.account === userData.account">刪除</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div v-if="loading" class="loading">載入中...</div>
-            </div>
-
-            <!-- 新增使用者 Modal -->
             <div v-if="showCreateModal" class="modal-overlay">
                 <div class="modal">
-                    <div class="modal-header">
-                        <h4>新增使用者</h4>
-                        <button class="close-btn" @click="closeCreateModal">&times;</button>
-                    </div>
                     <div class="modal-body">
+                        <h3>建立新使用者</h3>
                         <div class="form-group">
                             <label>使用者ID:</label>
                             <input 
@@ -109,14 +108,10 @@
                 </div>
             </div>
 
-            <!-- 編輯使用者 Modal -->
             <div v-if="showEditModal" class="modal-overlay">
                 <div class="modal">
-                    <div class="modal-header">
-                        <h4>編輯使用者</h4>
-                        <button class="close-btn" @click="closeEditModal">&times;</button>
-                    </div>
                     <div class="modal-body">
+                        <h3>編輯使用者</h3>
                         <div class="form-group">
                             <label>使用者ID:</label>
                             <input type="text" v-model="editUser.userId" readonly>
@@ -156,9 +151,11 @@
         },
         cleanUserId(value) {
             let cleaned = value.replace(/[^0-9]/g, '');
+
             if (cleaned.length > 1) {
                 cleaned = cleaned.replace(/^0+/, '');
             }
+
             if (cleaned.length > 10) {
                 cleaned = cleaned.substring(0, 10);
             }
@@ -166,6 +163,7 @@
         },
         restrictToNumbers(event) {
             const char = String.fromCharCode(event.which);
+
             if (!/[0-9]/.test(char)) {
                 event.preventDefault();
             }
@@ -174,6 +172,7 @@
             event.preventDefault();
             const paste = (event.clipboardData || window.clipboardData).getData('text');
             const numbersOnly = paste.replace(/[^0-9]/g, '');
+
             if (numbersOnly) {
                 const target = event.target;
                 const start = target.selectionStart;
@@ -194,7 +193,9 @@
         checkUserIdExists(mode) {
             const userIdField = mode === 'create' ? 'newUser' : 'editUser';
             const userId = this[userIdField].userId;
+
             if (!userId) return;
+
             this.clearUserIdCheckTimer();
             this.userIdCheckTimer = setTimeout(() => {
                 this.performUserIdCheck(userId, mode);
@@ -203,6 +204,7 @@
         async performUserIdCheck(userId, mode) {
             try {
                 const response = await axios.get(`/api/Admin/check-userid/${userId}`);
+
                 if (response.data.exists) {
                     showPopup(`使用者ID ${userId} 已存在，請輸入其他ID`, 'error');
                     const userIdField = mode === 'create' ? 'newUser' : 'editUser';
@@ -248,15 +250,18 @@
         validateUserForm(user, isCreate = false) {
             if (isCreate && !this.isValidPositiveInteger(user.userId)) {
                 showPopup('使用者ID必須是正整數', 'error');
+
                 if (isCreate) {
                     this.$nextTick(() => this.focusUserIdInput('create'));
                 }
                 return false;
             }
+
             if (!user.userName || !user.account) {
                 showPopup('請填寫所有必填欄位', 'error');
                 return false;
             }
+
             if (isCreate && !user.password) {
                 showPopup('請填寫密碼', 'error');
                 return false;
