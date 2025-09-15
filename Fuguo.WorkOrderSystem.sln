@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fuguo.WorkOrderSystem.Api", "Fuguo.WorkOrderSystem.Api\Fuguo.WorkOrderSystem.Api.csproj", "{405817FB-77E9-4330-9433-873039A27D85}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{405817FB-77E9-4330-9433-873039A27D85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{405817FB-77E9-4330-9433-873039A27D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{405817FB-77E9-4330-9433-873039A27D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{405817FB-77E9-4330-9433-873039A27D85}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF6F42A5-82A7-40F9-B2C1-20DC91FD3BD8}
+	EndGlobalSection
+EndGlobal

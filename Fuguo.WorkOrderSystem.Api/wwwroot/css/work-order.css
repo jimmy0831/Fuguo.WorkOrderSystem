@@ -1,0 +1,47 @@
+.work-order-modal {
+    width: 90vw;
+    max-width: 1500px;
+}
+
+.work-order-modal .modal-body {
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.work-order-modal .form-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem 1.5rem;
+}
+
+.work-order-modal .form-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.work-order-modal .form-group label {
+    flex-shrink: 0;
+    width: 85px;
+    text-align: right;
+    margin-right: 0.75rem;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+.work-order-modal .form-group input[type="text"],
+.work-order-modal .form-group input[type="number"],
+.work-order-modal .form-group textarea {
+    flex-grow: 1;
+    width: auto;
+}
+
+.work-order-modal .form-group.form-group-full {
+    display: block;
+}
+
+.work-order-modal .form-group.form-group-full label {
+    width: auto;
+    text-align: left;
+    margin-bottom: 0.3rem;
+}

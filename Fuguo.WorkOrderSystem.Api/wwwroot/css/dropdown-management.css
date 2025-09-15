@@ -1,0 +1,49 @@
+.tab-container {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    position: relative;
+    top: 2px;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-button:hover {
+    color: var(--primary-color);
+}
+
+
+.table-area {
+    width: 100%;
+}
+
+.table-action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.table-action-header h3 {
+    margin: 0;
+    font-size: 22px;
+    color: var(--text-primary);
+}
+
+.dropdown-management-container {
+    width: 50%;
+}
