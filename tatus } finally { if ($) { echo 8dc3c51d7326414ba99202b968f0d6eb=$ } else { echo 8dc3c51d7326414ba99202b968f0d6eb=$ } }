@@ -1,0 +1,22 @@
+[33m676cef6[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Revert "實作新增訂單"
+[33m3047308[m 修改 modal 顏色
+[33mdc0078c[m 修改 modal 顏色實作新增訂單
+[33mcaa1b78[m 實作新增訂單
+[33meab9da0[m 下拉式選單完成
+[33mcac4078[m 下拉式選單完成
+[33m8384c1c[m 將 JWT 改成 AES 加密。後台管理完成
+[33ma7d532e[m 清理程式碼
+[33m9fd043f[m 後台管理系統
+[33md65f737[m Revert "UserController"
+[33ma79da47[m Reapply "UserController"
+[33m6331ffa[m Revert "UserController"
+[33m898f312[m UserController
+[33m91c0b66[m    1. 啟動：        * 使用者訪問網站根目錄時，伺服器會載入 index.html。        * index.html 中的 main.js 會立即檢查 localStorage 中是否存在有效的 appSession          (包含使用者資料和當日時間)。        * 如果 appSession 不存在或已過期（非當日），則自動跳轉到 login.html。
+[33m628ae41[m JWT 驗證 controller
+[33md540181[m 註解
+[33m11759e8[m 設定 CROS
+[33mf53728c[m 新增欄位
+[33m4ef981e[m 導入資料庫、建立CROS
+[33m3e01de0[m 資料庫連線
+[33m1ea0b3f[m 加入專案檔案。
+[33m0d0ce04[m 新增 .gitattributes、.gitignore 和 README.md。
