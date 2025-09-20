@@ -22,15 +22,25 @@
 
 .work-order-modal .form-group label {
     flex-shrink: 0;
-    width: 85px;
-    text-align: right;
-    margin-right: 0.75rem;
+    width: 100px;
+    text-align: left;
+    margin-right: -0.25rem;
     margin-bottom: 0;
     font-size: 0.85rem;
 }
 
+.work-order-modal .form-group .form-checkbox-label {
+    display: flex;
+    align-items: center;
+}
+
+.work-order-modal .form-checkbox-label .form-checkbox {
+    margin-left: 1rem;
+}
+
 .work-order-modal .form-group input[type="text"],
 .work-order-modal .form-group input[type="number"],
+.work-order-modal .form-group select,
 .work-order-modal .form-group textarea {
     flex-grow: 1;
     width: auto;
@@ -40,8 +50,133 @@
     display: block;
 }
 
+.work-order-modal .form-group-span-2 {
+    grid-column: span 2;
+}
+
+.work-order-modal .form-group-span-4 {
+    grid-column: span 4;
+}
+
 .work-order-modal .form-group.form-group-full label {
     width: auto;
     text-align: left;
     margin-bottom: 0.3rem;
+}
+
+.customer-po-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.customer-po-user-select {
+    flex: 2;
+    min-width: 15px;
+}
+
+.customer-po-separator {
+    font-weight: bold;
+    color: #666;
+}
+
+.customer-po-suffix {
+    flex: 1;
+    min-width: 60px;
+    text-align: center;
+}
+
+.form-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.photo-uploader-container {
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    padding-bottom: 10px; /* Add some space for the scrollbar */
+}
+
+.photo-list-horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    min-height: 170px; /* Give it a minimum height */
+}
+
+.photo-uploader-label {
+    display: flex; /* Use flex to center content */
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    flex-shrink: 0; /* Prevent shrinking */
+    width: 150px;
+    height: 150px;
+    box-sizing: border-box;
+}
+
+.photo-uploader-label:hover {
+    background-color: #e9ecef;
+    border-color: var(--primary-color);
+}
+
+.photo-uploader-input {
+    display: none;
+}
+
+.photo-preview-item {
+    position: relative;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.photo-preview-item.is-report-photo {
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
+}
+
+.photo-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 0.25rem;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.photo-actions button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.2rem;
+}
+.photo-actions button.report-btn.active {
+    color: #ffc107;
 }

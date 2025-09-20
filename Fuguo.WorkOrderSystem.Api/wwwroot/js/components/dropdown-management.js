@@ -149,8 +149,7 @@ Vue.component('dropdown-management-component', {
                 </div>
             </div>
         </div>
-    `,
-    
+    `,    
     methods: {
         switchTab(tab) {
             this.activeTab = tab;
