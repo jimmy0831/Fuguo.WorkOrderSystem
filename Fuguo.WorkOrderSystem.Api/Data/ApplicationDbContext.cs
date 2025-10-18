@@ -103,6 +103,7 @@ public partial class ApplicationDbContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.EntityType).HasMaxLength(50);
+            entity.Property(e => e.IsShow).HasMaxLength(5);
             entity.Property(e => e.UploadedBy).HasMaxLength(50);
         });
 

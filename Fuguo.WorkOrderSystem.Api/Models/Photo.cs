@@ -15,6 +15,8 @@ public partial class Photo
 
     public string? Description { get; set; }
 
+    public string? IsShow { get; set; }
+
     public string? UploadedBy { get; set; }
 
     public DateTime? CreateDate { get; set; }
