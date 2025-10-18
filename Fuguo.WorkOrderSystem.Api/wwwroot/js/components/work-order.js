@@ -9,6 +9,21 @@ Vue.component('work-order-component', {
             packagingTypes: [], // Dropdown data
             formingTypes: [],   // Dropdown data
             cuttingTypes: [],   // Dropdown data
+            packageFields: {
+                packageWidth: { label: '整數寬' },
+                packageLength: { label: '整數長' },
+                packageHeight: { label: '整數高' },
+            },
+            integerPackage: [
+                { selected: 'packageWidth' },
+                { selected: 'packageLength' }
+            ],
+            fractionalPackageFields: {
+                fractionalPackageWidth: { label: '零數寬' },
+                fractionalPackageLength: { label: '零數長' },
+                fractionalPackageHeight: { label: '零數高' },
+            },
+            selectedFractionalField: 'fractionalPackageHeight',
             newOrder: {
                 workOrder: {
                     workOrderId: '',
@@ -58,6 +73,20 @@ Vue.component('work-order-component', {
         };
     },
     computed: {
+        integerOptions() {
+            return Object.keys(this.packageFields);
+        },
+        availableIntegerOptions1() {
+            const selectedInSecond = this.integerPackage[1].selected;
+            return this.integerOptions.filter(opt => opt !== selectedInSecond);
+        },
+        availableIntegerOptions2() {
+            const selectedInFirst = this.integerPackage[0].selected;
+            return this.integerOptions.filter(opt => opt !== selectedInFirst);
+        },
+        fractionalOptions() {
+            return Object.keys(this.fractionalPackageFields);
+        },
         fullCustomerPoNumber() {
             if (this.selectedUserId && this.customerPoSuffix) {
                 return `${this.selectedUserId}-${this.customerPoSuffix}`;
@@ -76,6 +105,24 @@ Vue.component('work-order-component', {
         },
         customerPoSuffix() {
             this.updateCustomerPoNumber();
+        },
+        'integerPackage': {
+            handler(newVal, oldVal) {
+                if (!oldVal) return;
+                for (let i = 0; i < oldVal.length; i++) {
+                    const oldField = oldVal[i].selected;
+                    const newField = newVal[i].selected;
+                    if (oldField !== newField) {
+                        this.newOrder.cuttingDies[oldField] = null;
+                    }
+                }
+            },
+            deep: true
+        },
+        selectedFractionalField(newField, oldField) {
+            if (oldField) {
+                this.newOrder.cuttingDies[oldField] = null;
+            }
         }
     },
     template: `
@@ -92,7 +139,10 @@ Vue.component('work-order-component', {
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label for="workOrderId">工單編號</label>
-                                        <input type="text" id="workOrderId" v-model="newOrder.workOrder.workOrderId" @blur="validateWorkOrderId">
+                                        <div class="input-group">
+                                            <span class="input-group-text">BU</span>
+                                            <input type="text" id="workOrderId" class="form-control" v-model="newOrder.workOrder.workOrderId" @blur="validateWorkOrderId" maxlength="6">
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="customerPoNumber">客戶編號</label>
@@ -133,20 +183,25 @@ Vue.component('work-order-component', {
                                     </div>
                                     <div class="form-group">
                                         <label for="thickness">厚度</label>
-                                        <input type="text" id="thickness" v-model="newOrder.workOrder.thickness" @input="numericOnly('newOrder.workOrder.thickness', true)">
+                                        <div class="input-group">
+                                            <input type="text" id="thickness" class="form-control" v-model="newOrder.workOrder.thickness" @input="numericOnly('newOrder.workOrder.thickness', true)">
+                                            <span class="input-group-text">條</span>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="width">寬度</label>
-                                        <input type="text" id="width" v-model="newOrder.workOrder.width" @input="numericOnly('newOrder.workOrder.width', true)">
+                                        <div class="input-group">
+                                            <input type="text" id="width" class="form-control" v-model="newOrder.workOrder.width" @input="numericOnly('newOrder.workOrder.width', true)">
+                                            <span class="input-group-text">cm</span>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="usedLength">使用長度</label>
-                                        <input type="text" id="usedLength" v-model="newOrder.workOrder.usedLength" @input="numericOnly('newOrder.workOrder.usedLength', true)">
-                                    </div>
-                                    <div class="form-group form-group-span-2">
-                                        <label for="remarks">備註</label>
-                                        <textarea id="remarks" v-model="newOrder.workOrder.remarks"></textarea>
-                                    </div>
+                                        <div class="input-group">
+                                            <input type="text" id="usedLength" class="form-control" v-model="newOrder.workOrder.usedLength" @input="numericOnly('newOrder.workOrder.usedLength', true)">
+                                            <span class="input-group-text">cm</span>
+                                        </div>
+                                    </div>                                    
                                     <div class="form-group">
                                         <label class="form-checkbox-label">
                                             <span>是否折邊</span>
@@ -164,6 +219,10 @@ Vue.component('work-order-component', {
                                             <span>是否加工</span>
                                             <input type="checkbox" v-model="newOrder.workOrder.processingRequired" class="form-checkbox">
                                         </label>
+                                    </div>
+                                    <div class="form-group form-group-span-1">
+                                        <label for="remarks">備註</label>
+                                        <textarea id="remarks" v-model="newOrder.workOrder.remarks"></textarea>
                                     </div>
                                 </div>
                             </fieldset>
@@ -243,7 +302,10 @@ Vue.component('work-order-component', {
                                     </div>
                                     <div class="form-group">
                                         <label for="deliveryQuantity">交貨數量</label>
-                                        <input type="text" id="deliveryQuantity" v-model="newOrder.cuttingDies.deliveryQuantity" @input="numericOnly('newOrder.cuttingDies.deliveryQuantity')">
+                                        <div class="input-group">
+                                            <input type="text" id="deliveryQuantity" v-model="newOrder.cuttingDies.deliveryQuantity" @input="numericOnly('newOrder.cuttingDies.deliveryQuantity')">
+                                            <span class="input-group-text">pice</span>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="packagingMethod">包裝方式</label>
@@ -252,30 +314,27 @@ Vue.component('work-order-component', {
                                             <option v-for="type in packagingTypes" :key="type.id" :value="type.name">{{ type.name }}</option>
                                         </select>
                                     </div>
+                                    <div v-for="(field, index) in integerPackage" :key="'integer-' + index" class="form-group">
+                                        <label :for="'packageField' + index">
+                                            <select v-model="field.selected" class="form-label-select">
+                                                <option v-for="optionKey in (index === 0 ? availableIntegerOptions1 : availableIntegerOptions2)" :key="optionKey" :value="optionKey">
+                                                    {{ packageFields[optionKey].label }}
+                                                </option>
+                                            </select>
+                                        </label>
+                                        <input type="text" :id="'packageField' + index" v-model.number="newOrder.cuttingDies[field.selected]" @input="numericOnly('newOrder.cuttingDies.' + field.selected, true)" class="form-control">
+                                    </div>                                    
                                     <div class="form-group">
-                                        <label for="packageLength">整數寬</label>
-                                        <input type="text" id="packageLength" v-model="newOrder.cuttingDies.packageLength" @input="numericOnly('newOrder.cuttingDies.packageLength', true)">
+                                        <label for="fractionalPackage">
+                                            <select v-model="selectedFractionalField" class="form-label-select">
+                                                <option v-for="optionKey in fractionalOptions" :key="optionKey" :value="optionKey">
+                                                    {{ fractionalPackageFields[optionKey].label }}
+                                                </option>
+                                            </select>
+                                        </label>
+                                        <input type="text" id="fractionalPackage" v-model.number="newOrder.cuttingDies[selectedFractionalField]" @input="numericOnly('newOrder.cuttingDies.' + selectedFractionalField, true)" class="form-control">
                                     </div>
-                                    <div class="form-group">
-                                        <label for="packageWidth">整數長</label>
-                                        <input type="text" id="packageWidth" v-model="newOrder.cuttingDies.packageWidth" @input="numericOnly('newOrder.cuttingDies.packageWidth', true)">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="packageHeight">整數高</label>
-                                        <input type="text" id="packageHeight" v-model="newOrder.cuttingDies.packageHeight" @input="numericOnly('newOrder.cuttingDies.packageHeight', true)">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="fractionalPackageLength">零數長</label>
-                                        <input type="text" id="fractionalPackageLength" v-model="newOrder.cuttingDies.fractionalPackageLength" @input="numericOnly('newOrder.cuttingDies.fractionalPackageLength', true)">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="fractionalPackageWidth">零數寬</label>
-                                        <input type="text" id="fractionalPackageWidth" v-model="newOrder.cuttingDies.fractionalPackageWidth" @input="numericOnly('newOrder.cuttingDies.fractionalPackageWidth', true)">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="fractionalPackageHeight">零數高</label>
-                                        <input type="text" id="fractionalPackageHeight" v-model="newOrder.cuttingDies.fractionalPackageHeight" @input="numericOnly('newOrder.cuttingDies.fractionalPackageHeight', true)">
-                                    </div>
+                                    <div class="form-group"></div>
                                     <div class="form-group">
                                         <label for="weightPerPiece">1PCS重量</label>
                                         <input type="text" id="weightPerPiece" v-model="newOrder.cuttingDies.weightPerPiece" @input="numericOnly('newOrder.cuttingDies.weightPerPiece', true)">
@@ -290,20 +349,22 @@ Vue.component('work-order-component', {
                                         <label for="cuttingDieDevelopmentNotes">刀模開發</label>
                                         <textarea id="cuttingDieDevelopmentNotes" v-model="newOrder.cuttingDies.cuttingDieDevelopmentNotes"></textarea>
                                     </div>
-                                    <div class="form-group form-group-span-2">
+                                    <div class="form-group form-group-span">
                                         <label for="formingNotes">成形</label>
                                         <select id="formingNotes" v-model="newOrder.cuttingDies.formingNotes">
                                             <option value="">請選擇</option>
                                             <option v-for="type in formingTypes" :key="type.id" :value="type.name">{{ type.name }}</option>
                                         </select>
                                     </div>
-                                    <div class="form-group form-group-span-2">
+                                    <div class="form-group form-group-span">
                                         <label for="cuttingNotes">斬型</label>
                                         <select id="cuttingNotes" v-model="newOrder.cuttingDies.cuttingNotes">
                                             <option value="">請選擇</option>
                                             <option v-for="type in cuttingTypes" :key="type.id" :value="type.name">{{ type.name }}</option>
                                         </select>
                                     </div>
+                                    <div class="form-group"></div>
+                                    <div class="form-group"></div>
                                     <div class="form-group form-group-span-2">
                                         <label for="punchingNotes">沖床</label>
                                         <textarea id="punchingNotes" v-model="newOrder.cuttingDies.punchingNotes"></textarea>
@@ -496,7 +557,7 @@ Vue.component('work-order-component', {
         async generateNextWorkOrderId() {
             try {
                 const response = await axios.get('/api/workorder/next-id');
-                this.newOrder.workOrder.workOrderId = response.data.workOrderId;
+                this.newOrder.workOrder.workOrderId = response.data.workOrderId.replace('BU', '');
             } catch (error) {
                 console.error('Error getting next work order ID:', error);
                 this.newOrder.workOrder.workOrderId = 'BU000001';
@@ -542,15 +603,16 @@ Vue.component('work-order-component', {
             }
         },
         async validateWorkOrderId() {
-            const workOrderId = this.newOrder.workOrder.workOrderId;
-            const pattern = /^BU\d{6}$/;
-            if (!pattern.test(workOrderId)) {
-                showPopup('工單編號格式錯誤，必須為 BU + 6碼數字 (例如: BU000001)', 'error');
+            const workOrderNumber = this.newOrder.workOrder.workOrderId;
+            const pattern = /^\d{6}$/;
+            if (!pattern.test(workOrderNumber)) {
+                showPopup('工單編號格式錯誤，必須為 6 碼數字', 'error');
                 return;
             }
             
             try {
-                const response = await axios.get(`/api/workorder/check-id/${encodeURIComponent(workOrderId)}`);
+                const fullWorkOrderId = 'BU' + workOrderNumber;
+                const response = await axios.get(`/api/workorder/check-id/${encodeURIComponent(fullWorkOrderId)}`);
                 if (response.data.exists) {
                     showPopup('此工單編號已存在，請使用其他編號', 'error');
                 }
@@ -563,8 +625,13 @@ Vue.component('work-order-component', {
             this.closeDialog();
         },
         resetForm() {
-            this.selectedUserId = '';
             this.customerPoSuffix = '0001';
+
+            this.integerPackage = [
+                { selected: 'packageWidth' },
+                { selected: 'packageLength' }
+            ];
+            this.selectedFractionalField = 'fractionalPackageHeight';
 
             if (this.newOrder.molds.moldPhotos) {
                 this.newOrder.molds.moldPhotos.forEach(photo => URL.revokeObjectURL(photo.url));
